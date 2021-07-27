@@ -46,6 +46,7 @@ class Movable {
     kill(){
         this.registery.splice(this.registery.findIndex(a=>a===this),1)
         this.element.parentElement.removeChild(this.element)
+        this.killed = true
     }
 
     positioned({x,y}) {

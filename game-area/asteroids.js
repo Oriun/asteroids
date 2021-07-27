@@ -26,10 +26,14 @@ class GrandAsteroid extends Movable {
 
 
     startMoving() {
-        this.positioned({
+        if(this.killed) return
+        const newCoordinate = {
             x: (this.vector.x * this.velocity / 10) + this.coordinate.x ,
             y: (this.vector.y * this.velocity / 10) + this.coordinate.y 
-        })
+        }
+        if(this.canMove(newCoordinate)){
+            this.positioned(newCoordinate)
+        }
         reqFrame(() => this.startMoving())
     }
 
@@ -50,7 +54,6 @@ class GrandAsteroid extends Movable {
     }
 
     divide() {
-        console.log('divide')
         const div1 = document.createElement('div')
         const div2 = document.createElement('div')
         this.element.parentElement.append(div1)
@@ -76,7 +79,6 @@ class GrandAsteroid extends Movable {
         super.kill()
     }
     kill() {
-        console.log('kill')
         if (this.state === 1) {
             super.kill()
         } else {
