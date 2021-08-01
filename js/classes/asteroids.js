@@ -15,7 +15,7 @@ class GrandAsteroid extends Movable {
             element,
             registery,
             size: { height: size.height * state, width: size.width * state },
-            image: './assets/asteroid.png',
+            image: '/assets/asteroid.png',
             origin,
             boundaries,
             onKill
@@ -61,7 +61,6 @@ class GrandAsteroid extends Movable {
     }
 
     divide() {
-        console.log('dividinng')
         if (this.killed) return false
         const div1 = document.createElement('div')
         const div2 = document.createElement('div')
@@ -95,10 +94,10 @@ class GrandAsteroid extends Movable {
         })
         super.kill()
     }
-    kill() {
+    kill(a) {
         if (this.killed) return false
         if (this.state === 1) {
-            super.kill()
+            super.kill(a)
         } else {
             this.divide()
         }

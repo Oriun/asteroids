@@ -1,6 +1,15 @@
 
+const search = window.location.search || ''
+const params = Object.fromEntries(search.slice(1).split('&').map(a => a.split("=")))
+const ship = shipTypes.find(a => a.id == params.s)
 
+if (!ship) {
+    console.log(params)
+    window.open('/', '_self')
+}
 window.onload = () => {
+    const clock = new Timer(document.querySelector('#clock'))
+    clock.start()
     window.ObjectList = []
     const boundaries = {
         x: document.querySelector('.game-area').getBoundingClientRect().width,
@@ -12,7 +21,8 @@ window.onload = () => {
         registery: window.ObjectList,
         onKill: () => {
             clearInterval(interval);
-            [...window.ObjectList].forEach(a =>a.forceKill())
+            [...window.ObjectList].forEach(a => a.forceKill())
+            clock.stop()
             window.alert('game over')
             window.location.reload()
         }
@@ -24,6 +34,12 @@ window.onload = () => {
         new Array(spawnNb).fill(1).map(createAsteroid)
     }, spawnInterval)
 
+    var killCount = -1
+    const counter = document.querySelector('#counter')
+    function incrementKillCount() {
+        counter.textContent = ++killCount + ' Kill'
+    }
+    incrementKillCount()
     function randBool(ratio = .5) { return Math.random() <= ratio }
 
     function randomAsteroidCoordinates() {
@@ -67,7 +83,8 @@ window.onload = () => {
             boundaries,
             origin,
             vector,
-            state
+            state,
+            onKill: () => incrementKillCount()
         })
     }
 }

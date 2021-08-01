@@ -82,8 +82,7 @@ class Laser extends Movable {
             }
         }
         if (ast) {
-            console.log('hit')
-            this.registery.find(a => a.element === ast).kill()
+            this.registery.find(a => a.element === ast).kill(true)
             this.kill()
         }
     }

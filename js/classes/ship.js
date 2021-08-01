@@ -4,7 +4,8 @@ class Ship extends Movable {
         LEFT: false,
         RIGHT: false,
         UP: false,
-        DOWN: false
+        DOWN: false,
+        SPACE: false
     }
     constructor({
         element,
@@ -32,9 +33,11 @@ class Ship extends Movable {
             onKill
         })
         this.element.classList.add('ship')
-        this.rotationFactor = .3
+        this.rotationFactor = .005
+        this.rotationInertia = 1
         window.addEventListener('keydown', e => this.listenKey(e, true))
         window.addEventListener('keyup', e => this.listenKey(e, false))
+        this.fireCount = 0
         this.keyDownLoop()
     }
     piClock(i) {
@@ -65,8 +68,8 @@ class Ship extends Movable {
         if (this.activeKeys.SPACE) {
             --this.fireCooldown
             if (!this.fireCooldown) {
-                this.fire()
-                this.fireCooldown =5
+                this.fire(!this.activeKeys.SHIFT)
+                this.fireCooldown = 5
             }
         }
         var tan = Math.atan((newCoordinates.x - this.coordinate.x) / (newCoordinates.y - this.coordinate.y))
@@ -76,35 +79,49 @@ class Ship extends Movable {
         if (Object.values(this.activeKeys).includes(true)) {
             var r = this.piClock(tan)
             var s = this.orientation
+            var factor = this.rotationFactor * this.rotationInertia
             if (r > s) {
                 if ((r - s) > Math.PI) {
-                    s -= this.rotationFactor
+                    s -= factor
                 } else {
-                    s = Math.min(s + this.rotationFactor, r)
+                    s = Math.min(s + factor, r)
                 }
             } else if (r !== s) {
                 if ((s - r) > Math.PI) {
-                    s += this.rotationFactor
+                    s += factor
                 } else {
-                    s = Math.max(s - this.rotationFactor, r)
+                    s = Math.max(s - factor, r)
                 }
             }
-            this.orientation = this.piClock(s) || this.orientation
+            s = this.piClock(s)
+            if(this.orientation !==s){
+                this.rotationInertia = Math.max(1, Math.min(60, this.rotationInertia * 1.3))
+            }else if (this.rotationInertia !== 1){
+                this.rotationInertia = Math.max(1, Math.min(60, this.rotationInertia / 1.3))
+            }
+            this.orientation = s || this.orientation
             this.rotate()
             if (this.canMove(newCoordinates)) {
                 this.positioned(newCoordinates)
             }
+        }else{
+            this.rotationInertia = 1
         }
         reqFrame(() => reqFrame(() => this.keyDownLoop()))
     }
-    fire() {
+    fire(forward = true) {
+        this.fireCount++
         const div = document.createElement('div')
         this.element.parentElement.append(div)
+        var f = forward ? 1 : -1
         new Laser({
-            origin: this.coordinate,
+            origin: {
+                x: this.coordinate.x + this.size.width * .5,
+                y: this.coordinate.y - this.size.height * .5,
+            },
             vector: {
-                x: Math.sin(this.orientation),
-                y: Math.cos(this.orientation),
+                x: Math.sin(this.orientation) * f,
+                y: Math.cos(this.orientation) * f,
             },
             element: div,
             boundaries: this.boundaries,
@@ -125,6 +142,9 @@ class Ship extends Movable {
                 break;
             case 32:
                 this.activeKeys.SPACE = val
+                break;
+            case 16:
+                this.activeKeys.SHIFT = val
                 break;
             case 37:
                 this.activeKeys.LEFT = val

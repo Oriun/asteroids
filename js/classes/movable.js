@@ -51,15 +51,16 @@ class Movable {
         if (this.killed) return false
         this.element.style.transform = `rotate(${this.orientation}rad)`
     }
-    kill() {
+    kill(prevent = false) {
         if (this.killed) return false
         this.registery.splice(this.registery.findIndex(a => a === this), 1)
         this.element.parentElement.removeChild(this.element)
         this.killed = true
-        this.onKill?.()
+        if(prevent){
+            this.onKill?.()
+        }
     }
     forceKill(){
-        console.log('forcekill')
         this.kill()
     }
 
