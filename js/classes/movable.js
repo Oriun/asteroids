@@ -14,7 +14,7 @@ class Movable {
         registery,
         onKill
     }) {
-        this.id = counter
+        this.id = ++counter
         this.element = element
         this.registery = registery
         registery.push(this)
@@ -23,7 +23,9 @@ class Movable {
         this.element.style.height = size.height + 'px'
         if(image) this.element.style.backgroundImage = `url("${image}")`
         this.element.classList.add('movable')
+        this.element.dataset.id = this.id
         this.size = size
+        this.maxHealth = health
         this.health = health
         this.velocity = velocity
         this.boundaries = boundaries

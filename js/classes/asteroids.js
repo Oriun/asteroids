@@ -1,4 +1,4 @@
-class GrandAsteroid extends Movable {
+class GrandAsteroid extends Damageable {
 
     constructor({
         element,
@@ -18,7 +18,8 @@ class GrandAsteroid extends Movable {
             image: '/assets/asteroid.png',
             origin,
             boundaries,
-            onKill
+            onKill,
+            health : state * 10
         })
         this.originalSize = size
         this.state = state
@@ -80,7 +81,8 @@ class GrandAsteroid extends Movable {
             state: this.state - 1,
             vector: alter(this.vector, .5),
             origin: alter(this.coordinate, 30),
-            onKill: this.onKill
+            onKill: this.onKill,
+            health: this.maxHealth * (this.state - 1) /this.state
         })
         new GrandAsteroid({
             element: div2,
@@ -90,7 +92,8 @@ class GrandAsteroid extends Movable {
             state: this.state - 1,
             vector: alter(this.vector, .5),
             origin: alter(this.coordinate, 30),
-            onKill: this.onKill
+            onKill: this.onKill,
+            health: this.maxHealth * (this.state - 1) /this.state
         })
         super.kill()
     }

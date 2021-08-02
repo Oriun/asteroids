@@ -19,8 +19,8 @@ window.onload = function () {
     }
 
     input.onchange = function ({ target: { value } }) {
-        username = value
-        setValid(/^[a-zA-Z0-9-_$?#@]{4,}$/g.test(value))
+        username = value.trim()
+        setValid(/^[a-zA-Z0-9-_$?#@]{4,}$/g.test(value.trim()))
     }
     input.onkeydown = function ({ key }) {
         if (key === "Enter") {

@@ -4,17 +4,20 @@ class Laser extends Movable {
         vector,
         element,
         boundaries,
-        registery
+        registery,
+        force,
+        size = { width: 10, height: 10 }
     }) {
         super({
-            size: { width: 10, height: 10 },
+            size,
             element,
             registery,
-            health: 0,
+            health: 10,
             velocity: 100,
             boundaries,
             origin
         })
+        this.force = force
         this.vector = vector
         this.element.classList.add("laser")
         this.startMoving()
@@ -82,7 +85,7 @@ class Laser extends Movable {
             }
         }
         if (ast) {
-            this.registery.find(a => a.element === ast).kill(true)
+            this.registery.find(a => a.element === ast).takeDamage(this.force)
             this.kill()
         }
     }

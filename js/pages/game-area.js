@@ -19,14 +19,24 @@ window.onload = () => {
         element: document.querySelector('#ship'),
         boundaries,
         registery: window.ObjectList,
-        onKill: () => {
-            clearInterval(interval);
-            [...window.ObjectList].forEach(a => a.forceKill())
-            clock.stop()
-            window.alert('game over')
-            window.location.reload()
-        }
+        onKill: gameEnd,
+        health: ship.health,
+        velocity: ship.velocity,
+        image: ship.img,
+        size: ship.size,
+        force: ship.force
     })
+
+    function gameEnd() {
+        clearInterval(interval);
+        clock.stop()
+        const time = clock.current
+        const precision = (killCount / this.fireCount) || 0
+        const pts = (killCount * 3 + time) * (1 + precision / 2)
+        window.alert('Game over : '+Math.floor(pts)+'pts')
+        // [...window.ObjectList].forEach(a => a.forceKill())
+        // window.alert('game over')
+    }
 
     const spawnNb = 5
     const spawnInterval = 3000

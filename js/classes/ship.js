@@ -1,5 +1,5 @@
 
-class Ship extends Movable {
+class Ship extends Damageable {
     activeKeys = {
         LEFT: false,
         RIGHT: false,
@@ -15,7 +15,8 @@ class Ship extends Movable {
         velocity = 50,
         boundaries = { x: 1000, y: 1000 },
         registery,
-        onKill
+        onKill,
+        force = 10
     }) {
         super({
             element,
@@ -38,6 +39,10 @@ class Ship extends Movable {
         window.addEventListener('keydown', e => this.listenKey(e, true))
         window.addEventListener('keyup', e => this.listenKey(e, false))
         this.fireCount = 0
+        this.fireCooldown = 1
+        this.damageCooldown = 1
+        this.maxDamageCooldown = 30
+        this.force = force
         this.keyDownLoop()
     }
     piClock(i) {
@@ -52,6 +57,7 @@ class Ship extends Movable {
     keyDownLoop() {
         if (this.killed) return false
         if (this.collisionCheck(this.coordinate)) return
+        if (this.damageCooldown) this.damageCooldown--
         const newCoordinates = { ...this.coordinate }
         if (this.activeKeys.UP) {
             newCoordinates.y += this.velocity / 5
@@ -94,9 +100,9 @@ class Ship extends Movable {
                 }
             }
             s = this.piClock(s)
-            if(this.orientation !==s){
+            if (this.orientation !== s) {
                 this.rotationInertia = Math.max(1, Math.min(60, this.rotationInertia * 1.3))
-            }else if (this.rotationInertia !== 1){
+            } else if (this.rotationInertia !== 1) {
                 this.rotationInertia = Math.max(1, Math.min(60, this.rotationInertia / 1.3))
             }
             this.orientation = s || this.orientation
@@ -104,7 +110,7 @@ class Ship extends Movable {
             if (this.canMove(newCoordinates)) {
                 this.positioned(newCoordinates)
             }
-        }else{
+        } else {
             this.rotationInertia = 1
         }
         reqFrame(() => reqFrame(() => this.keyDownLoop()))
@@ -125,7 +131,8 @@ class Ship extends Movable {
             },
             element: div,
             boundaries: this.boundaries,
-            registery: this.registery
+            registery: this.registery,
+            force: this.force,
         })
     }
     listenKey(e, val) {
@@ -194,8 +201,32 @@ class Ship extends Movable {
                 .map(a => document.elementFromPoint(a.x, -1 * a.y)?.classList.contains('asteroid'))
                 .includes(true)
         ) {
-            this.kill()
-            return true
+            // this.kill(true)
+            this.takeDamage(10)
+            return this.health === 0
+        }
+    }
+    kill(prevent = false) {
+        if (this.killed) return false
+        this.registery.splice(this.registery.findIndex(a => a === this), 1)
+        this.element.style.backgroundImage = `url("/assets/explosion.gif")`
+        setTimeout(() => {
+            this.element.parentElement.removeChild(this.element)
+        }, 1000)
+        this.killed = true
+        if (prevent) {
+            this.onKill?.()
+        }
+    }
+    setHealth(hp) {
+        console.log(this.health, hp)
+        super.setHealth(hp)
+        this.element.style.borderColor = `rgba(0, 140, 255, ${this.health / this.maxHealth})`
+    }
+    takeDamage(hitPoints) {
+        if (!this.damageCooldown) {
+            this.damageCooldown = this.maxDamageCooldown
+            super.takeDamage(hitPoints)
         }
     }
 }
