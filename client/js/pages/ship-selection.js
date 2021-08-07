@@ -5,7 +5,7 @@ const uname = params.u || localStorage.getItem("asteroid-uname")
 
 function createCard({ name, img, id, health, velocity, force }) {
     return `
-    <a href="/game-area.html?s=${id}&u=${uname}" class="ship-card">
+    <a href="/game-area?s=${id}&u=${uname}" class="ship-card">
         <h4>${name}</h4>
         <img src="${img}" class="ship-photo"/>
         <span>Health <img src="/assets/heart.svg" class="icon"/> : ${health}</span>

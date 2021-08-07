@@ -37,7 +37,6 @@ export class Damageable extends Movable {
     serialize() {
         return {
             ...super.serialize(),
-            type: 'damageable',
             health: Math.floor(this.health * 100 / this.maxHealth)
         }
     }

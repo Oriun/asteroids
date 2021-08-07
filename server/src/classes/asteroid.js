@@ -25,8 +25,6 @@ export class Asteroid extends Damageable {
         this.state = state
         this.vector = vector
         this.velocity = velocity
-        this.element.classList.add("asteroid")
-        this.element.dataset.state = state
         if (!state) super.kill()
     }
 

@@ -4,8 +4,8 @@ const params = Object.fromEntries(search.slice(1).split('&').map(a => a.split("=
 const ship = shipTypes.find(a => a.id == params.s)
 
 if (!ship) {
-    console.log(params)
-    window.open('/', '_self')
+    console.log(search, params)
+    // window.open('/', '_self')
 }
 window.onload = () => {
     const clock = new Timer(document.querySelector('#clock'))

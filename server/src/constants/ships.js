@@ -1,7 +1,7 @@
-[
+export default [
     {
         "name": "Bulk 3000",
-        "id": 2,
+        "id": "2",
         "health": 60,
         "velocity": 30,
         "size":{
@@ -13,7 +13,7 @@
     },
     {
         "name": "Speedo X-AE",
-        "id": 1,
+        "id": "1",
         "health": 30,
         "velocity": 60,
         "size":{
@@ -25,7 +25,7 @@
     },
     {
         "name": "Destroyer PX-77",
-        "id": 3,
+        "id": "3",
         "health": 100,
         "velocity": 10,
         "size":{
@@ -37,7 +37,7 @@
     },
     {
         "name": "Basic Rocket",
-        "id": 4,
+        "id": "4",
         "health": 10,
         "velocity": 30,
         "size":{

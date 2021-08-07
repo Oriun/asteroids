@@ -4,7 +4,6 @@ export class Laser extends Movable {
     constructor({
         origin,
         vector,
-        element,
         boundaries,
         registery,
         force,
@@ -12,7 +11,6 @@ export class Laser extends Movable {
     }) {
         super({
             size,
-            element,
             registery,
             health: 10,
             velocity: 100,
@@ -21,11 +19,9 @@ export class Laser extends Movable {
         })
         this.force = force
         this.vector = vector
-        this.element.classList.add("laser")
-        this.startMoving()
     }
 
-    startMoving() {
+    loop() {
         if (this.killed) return
         const newCoordinate = {
             x: (this.vector.x * this.velocity / 10) + this.coordinate.x,
@@ -37,7 +33,6 @@ export class Laser extends Movable {
         } else {
             this.kill()
         }
-        reqFrame(() => this.startMoving())
     }
 
     collisionCheck({ x, y }) {
@@ -79,13 +74,13 @@ export class Laser extends Movable {
             },
         ]
         var ast = null
-        for (const xy of points) {
-            let ree = document.elementFromPoint(xy.x, -1 * xy.y)
-            if (ree?.classList.contains('asteroid')) {
-                ast = ree
-                break
-            }
-        }
+        // for (const xy of points) {
+        //     let ree = document.elementFromPoint(xy.x, -1 * xy.y)
+        //     if (ree?.classList.contains('asteroid')) {
+        //         ast = ree
+        //         break
+        //     }
+        // }
         if (ast) {
             this.registery.find(a => a.element === ast).takeDamage(this.force)
             this.kill()

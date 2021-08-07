@@ -1,4 +1,6 @@
-import { idGenerator } from "../helpers/index.js"
+// import { idGenerator } from "../helpers/index.js"
+
+var count = 0
 
 export class Movable {
 
@@ -12,20 +14,18 @@ export class Movable {
         registery,
         onKill
     }) {
-        this.id = idGenerator()
-        this.element = element
+        this.id = ++count// idGenerator()
         this.registery = registery
         registery.push(this)
         this.size = size
         this.velocity = velocity
         this.boundaries = boundaries
         this.orientation = defaultOrientation
-        this.rotate()
         this.onKill = onKill
         this.positioned(origin)
 
     }
-    loop(){}
+    loop() { }
 
     canMove({ x, y }) {
         if (this.killed) return false
@@ -40,11 +40,11 @@ export class Movable {
         return true
     }
 
-    kill(prevent = false) {
+    kill(share = false) {
         if (this.killed) return false
         this.registery.splice(this.registery.findIndex(a => a === this), 1)
         this.killed = true
-        if (prevent) {
+        if (share) {
             this.onKill?.()
         }
     }
@@ -62,7 +62,7 @@ export class Movable {
             ...this.size,
             angle: this.orientation,
             id: this.id,
-            type: 'movable'
+            type: this.constructor.name
         }
     }
 }

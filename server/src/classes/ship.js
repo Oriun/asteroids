@@ -7,8 +7,9 @@ export class Ship extends Damageable {
         RIGHT: false,
         UP: false,
         DOWN: false,
-        SPACE: false,
-        SHIFT: false
+        SHOOT: false,
+        BACKWARD: false,
+        SPECIAL: false
     }
     constructor({
         size = { width: 100, height: 100 },
@@ -18,7 +19,7 @@ export class Ship extends Damageable {
         registery,
         onKill,
         force = 10,
-        getEdges
+        id
     }) {
         super({
             size,
@@ -33,6 +34,7 @@ export class Ship extends Damageable {
             registery,
             onKill
         })
+        this.shipId = id
         this.rotationFactor = .005
         this.rotationInertia = 1
         this.fireCount = 0
@@ -67,11 +69,11 @@ export class Ship extends Damageable {
         if (this.activeKeys.LEFT) {
             newCoordinates.x -= this.velocity / 5
         }
-        if (this.activeKeys.SPACE) {
+        if (this.activeKeys.SHOOT) {
             --this.fireCooldown
             if (!this.fireCooldown) {
-                this.fire(!this.activeKeys.SHIFT)
-                this.fireCooldown = 5
+                this.fire(!this.activeKeys.BACKWARD)
+                this.fireCooldown = 12
             }
         }
         var tan = Math.atan((newCoordinates.x - this.coordinate.x) / (newCoordinates.y - this.coordinate.y))
@@ -102,7 +104,6 @@ export class Ship extends Damageable {
                 this.rotationInertia = Math.max(1, Math.min(60, this.rotationInertia / 1.3))
             }
             this.orientation = s || this.orientation
-            this.rotate()
             if (this.canMove(newCoordinates)) {
                 this.positioned(newCoordinates)
             }
@@ -112,8 +113,6 @@ export class Ship extends Damageable {
     }
     fire(forward = true) {
         this.fireCount++
-        const div = document.createElement('div')
-        this.element.parentElement.append(div)
         var f = forward ? 1 : -1
         new Laser({
             origin: {
@@ -124,7 +123,6 @@ export class Ship extends Damageable {
                 x: Math.sin(this.orientation) * f,
                 y: Math.cos(this.orientation) * f,
             },
-            element: div,
             boundaries: this.boundaries,
             registery: this.registery,
             force: this.force,
@@ -135,8 +133,9 @@ export class Ship extends Damageable {
         RIGHT,
         UP,
         DOWN,
-        SPACE,
-        SHIFT
+        SHOOT,
+        BACKWARD,
+        SPECIAL
     }) {
         this.activeKeys = {
             ...this.activeKeys,
@@ -144,8 +143,9 @@ export class Ship extends Damageable {
             RIGHT,
             UP,
             DOWN,
-            SPACE,
-            SHIFT
+            SHOOT,
+            BACKWARD,
+            SPECIAL
         }
     }
     collisionCheck({ x, y }) {
@@ -186,37 +186,30 @@ export class Ship extends Damageable {
                 y: y - height * .5
             },
         ]
-        if (
-            points
-                .map(a => document.elementFromPoint(a.x, -1 * a.y)?.classList.contains('asteroid'))
-                .includes(true)
-        ) {
-            // this.kill(true)
-            this.takeDamage(10)
-            return this.health === 0
-        }
-    }
-    kill(prevent = false) {
-        if (this.killed) return false
-        this.registery.splice(this.registery.findIndex(a => a === this), 1)
-        this.element.style.backgroundImage = `url("/assets/explosion.gif")`
-        setTimeout(() => {
-            this.element.parentElement.removeChild(this.element)
-        }, 1000)
-        this.killed = true
-        if (prevent) {
-            this.onKill?.()
-        }
+        // if (
+        //     points
+        //         .map(a => document.elementFromPoint(a.x, -1 * a.y)?.classList.contains('asteroid'))
+        //         .includes(true)
+        // ) {
+        //     // this.kill(true)
+        //     this.takeDamage(10)
+        //     return this.health === 0
+        // }
     }
     setHealth(hp) {
         console.log(this.health, hp)
         super.setHealth(hp)
-        this.element.style.borderColor = `rgba(0, 140, 255, ${this.health / this.maxHealth})`
     }
     takeDamage(hitPoints) {
         if (!this.damageCooldown) {
             this.damageCooldown = this.maxDamageCooldown
             super.takeDamage(hitPoints)
+        }
+    }
+    serialize(){
+        return {
+            ...super.serialize(),
+            type: 'Ship'+this.shipId
         }
     }
 }

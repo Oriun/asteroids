@@ -4,12 +4,13 @@ import { WebSocket } from 'ws'
 const current = {
     UP: false,
     LEFT: false,
-    DOWN: true,
+    DOWN: false,
     RIGHT: false,
     SHOOT: false,
-    BACKWARD: false
+    BACKWARD: false,
+    SPECIAL: false
 }
-const keys = ["UP", "LEFT", "DOWN", "RIGHT", "SHOOT", "BACKWARD"]
+const keys = ["UP", "LEFT", "DOWN", "RIGHT", "SHOOT", "BACKWARD","SPECIAL"]
 
 const wait = ms => new Promise(r => setTimeout(r, ms))
 
