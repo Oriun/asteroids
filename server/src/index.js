@@ -16,19 +16,24 @@ function parse(binary) {
 
 function connection(socket) {
     socket.id = idGenerator()
-    socket.inGame = true
+    socket.inGame = false
     console.log('new connection', socket.id)
     socket.send('id' + socket.id)
     socketList.push(socket)
     socket.game = new Game()
     socket.on('message', function (message) {
-        console.log('new message from ', socket.id)
+        // console.log('new message from ', socket.id)
         if (socket.inGame && message.length === 1) {
             const input = parse(message[0].toString(2))
             socket.game.ships[socket.id]?.setKeys(input)
         } else {
             const json = message.toString()
             if (json.startsWith('start')) {
+                if(socket.inGame){
+                    socket.game.end()
+                    socket.game = new Game()
+                }
+                socket.inGame = true
                 socket.game
                     .configure(JSON.parse(json.slice(6)))
                     .createShip(json[5], socket.id)
@@ -36,6 +41,7 @@ function connection(socket) {
                     .send = a => socket.send("refresh;" + a)
             } else if (json.startsWith('end')) {
                 socket.game.end()
+                socket.inGame = false
                 socket.send('end game')
             } else if (json.startsWith('restore')) {
                 var toRestore = socketList.find(a => a.id = json.slice(7))

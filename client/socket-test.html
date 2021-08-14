@@ -16,11 +16,12 @@
     }
 
     body {
-        width: 1000px;
-        height: 800px;
+        width: 100vw;
+        height: 100vh;
         position: relative;
         background-color: black;
         overflow: hidden;
+        margin: 0;
     }
 </style>
 <script type="application/javascript">
@@ -94,6 +95,8 @@
         // console.timeEnd(count)
         if (data.startsWith('refresh;')) {
             process(data)
+        } else if (data.startsWith('end')) {
+            window.alert('loose')
         }
         // console.time(++count)
     }
@@ -158,15 +161,20 @@
     window.addEventListener('keydown', setKeys(true))
     window.addEventListener('keyup', setKeys(false))
     window.addEventListener('keypress', e => e.preventDefault() || false)
-    window.onload = () => {
-        arena = document.body
-    }
     function start(ship = 1) {
-        socket.send('start' + ship + JSON.stringify({ d: 2, w: 1000, h: 800 }))
+        var { width, height } = arena.getBoundingClientRect()
+        socket.onopen = () => {
+            socket.send('start' + ship + JSON.stringify({ d: .5, w: width, h: height }))
+        }
     }
-    function stop(ship = 1) {
+    function stop() {
         socket.send('end')
     }
+    window.onload = () => {
+        arena = document.body
+        start()
+    }
+    window.beforeunload = stop
 </script>
 
 </html>

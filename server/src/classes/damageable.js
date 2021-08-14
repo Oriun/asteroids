@@ -13,7 +13,8 @@ export class Damageable extends Movable {
         },
         defaultOrientation = 0,
         registery,
-        onKill
+        onKill,
+        edges
     }) {
         super({
             size,
@@ -22,7 +23,8 @@ export class Damageable extends Movable {
             origin,
             defaultOrientation,
             registery,
-            onKill
+            onKill,
+            edges
         })
         this.maxHealth = health
         this.setHealth(this.maxHealth)

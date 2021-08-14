@@ -1,6 +1,7 @@
 import { Damageable } from './damageable.js'
 import { Laser } from './laser.js'
-
+import { intersect } from './edges.js'
+// import Polygon, { rotateAround } from './polygon.js'
 export class Ship extends Damageable {
     activeKeys = {
         LEFT: false,
@@ -19,7 +20,8 @@ export class Ship extends Damageable {
         registery,
         onKill,
         force = 10,
-        id
+        id,
+        edges
     }) {
         super({
             size,
@@ -28,11 +30,12 @@ export class Ship extends Damageable {
             boundaries,
             origin: {
                 x: (boundaries.x - size.width) * .5,
-                y: ((boundaries.y * -1) + size.height) * .5
+                y: (boundaries.y - size.height) * .5
             },
             defaultOrientation: 0,
             registery,
-            onKill
+            onKill,
+            edges
         })
         this.shipId = id
         this.rotationFactor = .005
@@ -42,6 +45,7 @@ export class Ship extends Damageable {
         this.damageCooldown = 1
         this.maxDamageCooldown = 30
         this.force = force
+
     }
     piClock(i) {
         var r = i
@@ -54,14 +58,14 @@ export class Ship extends Damageable {
     }
     loop() {
         if (this.killed) return false
-        if (this.collisionCheck(this.coordinate)) return
+        if (this.collisionCheck()) return
         if (this.damageCooldown) this.damageCooldown--
         const newCoordinates = { ...this.coordinate }
         if (this.activeKeys.UP) {
-            newCoordinates.y += this.velocity / 5
+            newCoordinates.y -= this.velocity / 5
         }
         if (this.activeKeys.DOWN) {
-            newCoordinates.y -= this.velocity / 5
+            newCoordinates.y += this.velocity / 5
         }
         if (this.activeKeys.RIGHT) {
             newCoordinates.x += this.velocity / 5
@@ -99,11 +103,10 @@ export class Ship extends Damageable {
             }
             s = this.piClock(s)
             if (this.orientation !== s) {
-                this.rotationInertia = Math.max(1, Math.min(60, this.rotationInertia * 1.3))
+                this.rotate(s)
             } else if (this.rotationInertia !== 1) {
                 this.rotationInertia = Math.max(1, Math.min(60, this.rotationInertia / 1.3))
             }
-            this.orientation = s || this.orientation
             if (this.canMove(newCoordinates)) {
                 this.positioned(newCoordinates)
             }
@@ -114,10 +117,10 @@ export class Ship extends Damageable {
     fire(forward = true) {
         this.fireCount++
         var f = forward ? 1 : -1
-        new Laser({
+        var _ = new Laser({
             origin: {
                 x: this.coordinate.x + this.size.width * .5,
-                y: this.coordinate.y - this.size.height * .5,
+                y: this.coordinate.y + this.size.height * .5,
             },
             vector: {
                 x: Math.sin(this.orientation) * f,
@@ -126,6 +129,7 @@ export class Ship extends Damageable {
             boundaries: this.boundaries,
             registery: this.registery,
             force: this.force,
+            id: this.id
         })
     }
     setKeys({
@@ -148,56 +152,23 @@ export class Ship extends Damageable {
             SPECIAL
         }
     }
-    collisionCheck({ x, y }) {
-        const cte = Math.sqrt(2) / 2
-        const width = this.size.width
-        const height = this.size.height
-        const points = [
-            {
-                x: x + (1 - cte) * width * .5,
-                y: y - (1 - cte) * height * .5
-            },
-            {
-                x: x + (width * .5),
-                y
-            },
-            {
-                x: x + (1 + cte) * width * .5,
-                y: y - (1 - cte) * height * .5
-            },
-            {
-                x: x + (1 - cte) * width * .5,
-                y: y - (1 + cte) * height * .5
-            },
-            {
-                x: x + (width * .5),
-                y: y - height
-            },
-            {
-                x: x + (1 + cte) * width * .5,
-                y: y - (1 + cte) * height * .5
-            },
-            {
-                x,
-                y: y - height * .5
-            },
-            {
-                x: x + width,
-                y: y - height * .5
-            },
-        ]
-        // if (
-        //     points
-        //         .map(a => document.elementFromPoint(a.x, -1 * a.y)?.classList.contains('asteroid'))
-        //         .includes(true)
-        // ) {
-        //     // this.kill(true)
-        //     this.takeDamage(10)
-        //     return this.health === 0
-        // }
+    rotate(angle) {
+        super.rotate(angle)
+        this.rotationInertia = Math.max(1, Math.min(60, this.rotationInertia * 1.3))
+    }
+    collisionCheck() {
+        var hit = this.registery.find(sprite => {
+            if ((sprite.origin || sprite.id) === this.id) return false
+            return sprite.edges && intersect(sprite.edges, this.edges)
+        })
+        if (hit) {
+            console.log('hit', hit.id, hit.constructor?.name, this.health)
+            this.takeDamage(10)
+            return this.health === 0
+        }
     }
     setHealth(hp) {
-        console.log(this.health, hp)
+        // console.log(this.health, hp)
         super.setHealth(hp)
     }
     takeDamage(hitPoints) {
@@ -206,10 +177,13 @@ export class Ship extends Damageable {
             super.takeDamage(hitPoints)
         }
     }
-    serialize(){
+    serialize() {
         return {
             ...super.serialize(),
-            type: 'Ship'+this.shipId
+            type: 'Ship' + this.shipId
         }
+    }
+    positioned(c) {
+        super.positioned(c)
     }
 }

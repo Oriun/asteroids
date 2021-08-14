@@ -33,7 +33,7 @@ class Sprite {
 
     }
     positionned(x, y) {
-        this.element.style.top = y + 'px'
+        this.element.style.top = (-1 * y) + 'px'
         this.element.style.left = x + 'px'
     }
 }

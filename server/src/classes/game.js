@@ -18,7 +18,7 @@ export class Game {
     interval = null
     configure({ d, w, h }) {
         this.boundaries = { x: w, y: h }
-        this.spawnNumber = 5 * d
+        this.spawnNumber = Math.floor(5 * d)
         this.ready = true
         return this
     }
@@ -31,10 +31,11 @@ export class Game {
             ...shipData,
             registery: this.sprites,
             boundaries: this.boundaries,
+            onKill: () => this.end()
         })
         return this
     }
-    send() { }
+    send() { /* Must be overriden */ }
     start() {
         this.spawnLoop = setInterval(() => {
             new Array(this.spawnNumber).fill(1).map(() => this.createAsteroid())
@@ -57,6 +58,7 @@ export class Game {
         this.running = false
         clearInterval(this.spawnLoop)
         clearInterval(this.mainLoop)
+        this.send('end')
         return this
     }
     stringSerializer() {
@@ -73,21 +75,21 @@ export class Game {
 
     randomAsteroidCoordinates() {
         var x = -100
-        var y = 100
+        var y = -100
 
         if (randBool()) { // free on x axis
             if (randBool()) {
                 x = this.boundaries.x * Math.random()
             }
             if (randBool()) {
-                y = this.boundaries.y * -1
+                y = this.boundaries.y
             }
         } else {
             if (randBool()) {
                 x = this.boundaries.x
             }
             if (randBool()) {
-                y = this.boundaries.y * -1 * Math.random()
+                y = this.boundaries.y * Math.random()
             }
         }
         return { x, y }

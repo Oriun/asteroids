@@ -44,12 +44,12 @@ export class Asteroid extends Damageable {
 
     canMove({ x, y }) {
         if (this.killed) return false
-        if (x < -100 || y > 100) {
+        if (x < -100 || y < -100) {
             super.kill()
             return false
         }
         const right = x + this.size.width
-        const bottom = this.size.height - y
+        const bottom = y + this.size.height
         if (right > (this.boundaries.x + 100) || bottom > (this.boundaries.y + 100)) {
             super.kill()
             return false
