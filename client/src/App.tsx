@@ -1,34 +1,33 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import './App.css'
+import { useEffect, useRef, useState } from "react";
+import { ask, register } from "./services/websocket";
+import Renderer, { GameState, initialGameState } from "./Renderer";
 
 function App() {
-  const [count, setCount] = useState(0)
-
-  return (
-    <div className="App">
-      <div>
-        <a href="https://vitejs.dev" target="_blank">
-          <img src="/vite.svg" className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://reactjs.org" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.tsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </div>
-  )
+  const [gameState, setGameState] = useState<GameState>(initialGameState);
+  const first = useRef(true);
+  useEffect(() => {
+    if (!first.current) return;
+    first.current = false;
+    (async () => {
+      const id = await ask("id")();
+      console.log({ id });
+      await Promise.all([
+        ask("game_started")().then((game_id) =>
+          console.log("game_started", game_id)
+        ),
+        ask("new_game")({ players: [id] }).then(() =>
+          console.log("new game created")
+        )
+      ]);
+    })();
+  }, []);
+  useEffect(() => {
+    ask("game_updated")().then((gameState) => {
+      console.count("new update");
+      setGameState(gameState as GameState);
+    });
+  }, [gameState]);
+  return <Renderer gameState={gameState} />;
 }
 
-export default App
+export default App;
