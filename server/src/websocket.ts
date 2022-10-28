@@ -102,6 +102,12 @@ websocketServer.on("connection", (socket) => {
             broadcast(game.players, "game_started", game.id);
           game.onUpdate = (game, data) =>
             broadcast(game.players, "game_updated", { items: data });
+          game.start();
+          game.onSave = (game) => {
+            console.log("game saved");
+            broadcast(game.players, "game_saved", game.id);
+            delete games[game.id];
+          };
           break;
         }
         case "rotate": {

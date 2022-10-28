@@ -124,33 +124,4 @@ export class Asteroid implements GameElement {
       }
     }
   }
-  draw(
-    buf: NdArray<TypedArray | GenericArray<number> | number[]>,
-    game: Game
-  ): void {
-    const centerX = this.x + this.width / 2;
-    const centerY = this.y - this.width / 2;
-    vertical: for (let i = this.width + 1; i > -1; i--) {
-      if (Math.floor(this.y + i) < 0 || Math.floor(this.y + i) >= game.height)
-        continue vertical;
-      let j = 0;
-      horizontal: while (true) {
-        const dist = Math.sqrt(j ** 2 + (this.y - i - centerY) ** 2);
-        if (dist > this.width / 2) {
-          break horizontal;
-        }
-        buf.set(
-          Math.floor(centerX - j),
-          game.height - Math.floor(this.y + i),
-          255
-        );
-        buf.set(
-          Math.floor(centerX + j),
-          game.height - Math.floor(this.y + i),
-          255
-        );
-        j++;
-      }
-    }
-  }
 }

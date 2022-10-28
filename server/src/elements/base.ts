@@ -24,8 +24,7 @@ export interface GameElement {
   speed: number;
   dead: boolean;
   die(game?: Game): void;
-  serialize(save?: boolean): SerializedGameElement;
+  serialize(): SerializedGameElement;
   live(game: Game, delay: number): void;
   collide(game: Game, other: GameElement): void;
-  draw(buf: NdArray, game: Game): void;
 }

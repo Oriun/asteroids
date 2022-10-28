@@ -15,17 +15,7 @@ export type GameState = {
   items: GameItem[];
 };
 export const initialGameState: GameState = {
-  items: [
-    {
-      type: "asteroid",
-      id: "1",
-      x: 200,
-      y: 200,
-      rotation: 0,
-      width: 100,
-      height: 100
-    }
-  ]
+  items: []
 };
 
 const Asteroid: React.FC<GameItem> = ({

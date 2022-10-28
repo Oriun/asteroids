@@ -20,6 +20,10 @@ function App() {
         )
       ]);
     })();
+    (async function () {
+      await ask("game_saved")();
+      window.location.reload();
+    })();
   }, []);
   useEffect(() => {
     ask("game_updated")().then((gameState) => {

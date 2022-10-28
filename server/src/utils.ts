@@ -41,43 +41,54 @@ export const circleCollision = (
 };
 
 export const zeros2d = (width: number, height: number): number[] => {
-  const array = new Array(width * height);
-  for (let i = 0; i < array.length; i++) {
-    array[i] = 0;
-  }
-  return array;
+  return Array.from({ length: width * height }, () => 0);
 };
+
 export const zeros = (
   width: number,
   height: number,
   shape: number
-): number[] => {
-  const array = new Array(width * height);
-  for (let i = 0; i < array.length; i++) {
-    array[i] = new Array(shape).fill(0);
-  }
-  return array;
+): number[][] => {
+  return Array.from({ length: width * height }, () =>
+    Array.from({ length: shape }, () => 0)
+  );
 };
 
 export const finiteQueue = <T>(size: number): T[] => {
   const queue: T[] = [];
   queue.push = (item: T) => {
-    if (queue.length >= size) {
-      queue.shift();
-    }
+    if (queue.length >= size) queue.shift();
     return Array.prototype.push.call(queue, item);
   };
   return queue;
 };
 
-export const saveToPng = async (buf: NdArray, filename: string) => {
-  const paths = filename.split("/");
-  paths.pop();
-  paths.length &&
-    (await mkdir(paths.join("/"), { recursive: true }).catch(() => {}));
-  console.log("saving");
-  const out = createWriteStream(filename + ".png");
-  savePixels(buf, "png").pipe(out);
-  await new Promise((resolve) => out.on("finish", resolve));
-  console.log("saved");
+export class PngSaver {
+  static async save(buf: NdArray, filename: string) {
+    const paths = filename.split("/");
+    paths.pop();
+    if (paths.length)
+      await mkdir(paths.join("/"), { recursive: true }).catch(() => {});
+    const stream = createWriteStream(filename);
+    savePixels(buf, "png").pipe(stream);
+    await new Promise((resolve, reject) => {
+      stream.on("finish", resolve);
+      stream.on("error", reject);
+    });
+  }
+}
+
+export class Timer {
+  start: [number, number];
+  constructor() {
+    this.start = process.hrtime();
+  }
+  elapsed() {
+    const end = process.hrtime(this.start);
+    return end[0] * 1e9 + end[1];
+  }
+}
+
+export const formatNumber = (num: number): string => {
+  return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
 };
