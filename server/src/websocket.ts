@@ -10,7 +10,7 @@ type WSMessage<T = unknown> = {
 
 const websocketServer = new Server({
   noServer: true,
-  path: "/api/ws"
+  path: "/api/ws",
 });
 
 function upgrade(request: any, socket: any, head: any) {
@@ -24,7 +24,7 @@ function respond(socket: WebSocket, type: string, data: unknown) {
   socket.send(
     JSON.stringify({
       type,
-      data
+      data,
     } as WSMessage)
   );
 }
@@ -46,9 +46,9 @@ function UnexpectedError(socket: WebSocket, error: Error, message: string) {
   respond(socket, "unexpected_error", {
     error: {
       message: error.message,
-      stack: error.stack
+      stack: error.stack,
     },
-    message
+    message,
   });
 }
 
@@ -91,17 +91,15 @@ websocketServer.on("connection", (socket) => {
               broadcast(game.players, "player_death", playerObject.id);
               console.log("Player died");
               if (!game.elements.find((element) => element.type === "player")) {
-                console.log("Game over");
+                console.log("Game over", game.time);
                 broadcast(game.players, "game_over");
                 game.stop();
               }
             };
             players[playerId] = playerObject;
           });
-          game.onStart = (game) =>
-            broadcast(game.players, "game_started", game.id);
-          game.onUpdate = (game, data) =>
-            broadcast(game.players, "game_updated", { items: data });
+          game.onStart = (game) => broadcast(game.players, "game_started", game.id);
+          game.onUpdate = (game, data) => broadcast(game.players, "game_updated", { items: data });
           game.start();
           game.onSave = (game) => {
             console.log("game saved");

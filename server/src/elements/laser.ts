@@ -15,14 +15,7 @@ export class Laser implements GameElement {
   dead = false;
   origin: string;
 
-  constructor(
-    x: number,
-    y: number,
-    width: number,
-    height: number,
-    rotation: number,
-    playerId: string
-  ) {
+  constructor(x: number, y: number, width: number, height: number, rotation: number, playerId: string) {
     this.id = shortid();
     this.type = "laser";
     this.x = x;
@@ -30,7 +23,7 @@ export class Laser implements GameElement {
     this.width = width;
     this.height = height;
     this.rotation = rotation;
-    this.speed = 120;
+    this.speed = 200;
     this.origin = playerId;
   }
 
@@ -47,7 +40,7 @@ export class Laser implements GameElement {
       y: this.y,
       rotation: this.rotation,
       width: this.width,
-      height: this.height
+      height: this.height,
     };
   }
   live(game: Game, delay: number): void {
@@ -55,12 +48,7 @@ export class Laser implements GameElement {
     const radians = (this.rotation * Math.PI) / 180;
     this.x += (Math.cos(radians) * this.speed * delay) / 1000;
     this.y += (Math.sin(radians) * this.speed * delay) / 1000;
-    if (
-      this.x < -this.width ||
-      this.x > game.width ||
-      this.y < -this.height ||
-      this.y > game.height
-    ) {
+    if (this.x < -this.width || this.x > game.width || this.y < -this.height || this.y > game.height) {
       this.die(game);
     }
   }

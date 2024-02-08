@@ -1,14 +1,19 @@
 import ndArray, { NdArray, Data } from "ndarray";
-import type { Game } from ".";
+import { Game } from ".";
 import { SerializedGameElement } from "../elements/base";
 import { Laser } from "../elements/laser";
 import { bound, formatNumber, PngSaver, Timer } from "../utils";
 import { StaticPool } from "node-worker-threads-pool";
+import ndarray from "ndarray";
+import OS from "os";
 
 type Coordinate = [number, number];
 
+console.log("OS.cpus().length = ", OS.cpus().length);
+export const workerPool = new StaticPool({ size: OS.cpus().length, task: "./dist/games/traceWorker.js" });
+
 export class Trace {
-  traceGamma = 0.75;
+  traceGamma = 0.9;
   asteroids: Coordinate[][] = [];
   playerSpecific: Record<string, Coordinate[][]> = {};
   game: Game;
@@ -16,13 +21,6 @@ export class Trace {
 
   constructor(game: Game) {
     this.game = game;
-  }
-  clone() {
-    const clonedGame = this.game.clone();
-    clonedGame.trace.traceGamma = this.traceGamma;
-    clonedGame.trace.asteroids = this.asteroids;
-    clonedGame.trace.playerSpecific = this.playerSpecific;
-    return clonedGame.trace;
   }
   get length() {
     return this.asteroids.length;
@@ -37,7 +35,10 @@ export class Trace {
       this.playerSpecific[id].push([]);
     });
     for (const element of data) {
-      const [key, func] = element.type === "player" ? [element.rotation + "deg", Trace.drawPlayer] : [element.width + "px", Trace.drawPlain];
+      const [key, func] =
+        element.type === "player"
+          ? [element.rotation + "deg", Trace.drawPlayer]
+          : [element.width + "px", Trace.drawPlain];
       let pos = Trace.cachedDrawings[key];
       if (!pos) {
         pos = func(element.width, element.rotation, this.game.height);
@@ -139,10 +140,11 @@ export class Trace {
     }
     return pos;
   }
-  exportOneFrame(player: string, index: number, length: number) {
+  exportOneFrame(player: string, index: number, length: number): NdArray {
     const asteroidSlice = this.asteroids.slice(index - length, index);
     const playerSlice = this.playerSpecific[player].slice(index - length, index);
-    const buf = this.buf();
+
+    const buf = ndarray(new Uint8Array(this.game.width * this.game.height), [this.game.width, this.game.height]);
     for (let j = 0; j < asteroidSlice.length; j++) {
       const value = Math.floor(255 * Math.pow(this.traceGamma, length - j - 1));
       for (const [x, y] of asteroidSlice[j]) {
@@ -156,49 +158,29 @@ export class Trace {
   }
   export(player: string, length: number = 5) {
     if (!this.length) return null;
-    const buffs = [] as NdArray[];
-    for (let i = length; i < this.length; i++) {
-      try {
-        buffs.push(this.exportOneFrame(player, i, length));
-      } catch (e) {
-        console.log(e);
-      }
-    }
-    return buffs;
+    return Promise.all(
+      Array.from({ length: this.length - length }, (_, i) => {
+        return this.exportOneFrame(player, i + length, length);
+      })
+    );
   }
   async save() {
     const t = new Timer();
     let totalDuration = 0;
 
-    // const worker = async ({ player, trace }: { player: string; trace: Trace }) => {
-    //   console.log("inside worker");
-    //   const exportData = await trace.export(player, 10);
-    //   if (!exportData) {
-    //     return;
-    //   }
-    //   const saveTimer = new Timer();
-    //   await Promise.all(
-    //     exportData.map((buf, i) => {
-    //       const filename = `trace/${trace.game.creationTime}/${trace.game.id}/${player}/${i}`;
-    //       return PngSaver.save(buf, filename);
-    //     })
-    //   );
-    //   totalDuration += saveTimer.elapsed();
-    // };
-    // console.log("new pool");
-    // const workerPool = new StaticPool({ size: 8, task: worker });
-    // await Promise.all(this.game.players.map((player) => workerPool.exec({ player, trace: this.clone() })));
-    // await workerPool.destroy();
     player: for (const player of this.game.players) {
-      const exportData = await this.export(player, 10);
+      const exportData = await this.export(player, 30);
       if (!exportData) {
         continue player;
       }
       const saveTimer = new Timer();
       await Promise.all(
         exportData.map((buf, i) => {
-          const filename = `trace/${this.game.creationTime}/${this.game.id}/${player}/${i}`;
-          return PngSaver.save(buf, filename);
+          const filename = `trace/${Game.creationTime}/${this.game.id}/${player}/${i}`;
+          return workerPool.exec({
+            type: "save",
+            data: { buf, filename },
+          });
         })
       );
       totalDuration += saveTimer.elapsed();

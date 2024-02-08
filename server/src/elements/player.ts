@@ -1,5 +1,6 @@
 import { NdArray } from "ndarray";
 import Game from "../games";
+import { bound } from "../utils";
 import { GameElement, ItemTypes, SerializedGameElement } from "./base";
 import { Laser } from "./laser";
 
@@ -16,21 +17,13 @@ export class Player implements GameElement {
   onDeath?(game: Game | undefined): void;
   age = 0;
   lastShoot = 0;
-  fireRate = 1000 / 5;
+  fireRate = 5;
   game: Game;
   canShoot = true;
   canRotate = true;
   canAccelerate = true;
 
-  constructor(
-    id: string,
-    x: number,
-    y: number,
-    width: number,
-    height: number,
-    rotation: number,
-    game: Game
-  ) {
+  constructor(id: string, x: number, y: number, width: number, height: number, rotation: number, game: Game) {
     this.id = id;
     this.type = "player";
     this.x = x;
@@ -46,7 +39,7 @@ export class Player implements GameElement {
     return this.#_speed;
   }
   set speed(speed: number) {
-    this.#_speed = Math.max(Math.min(speed, 100), 0);
+    this.#_speed = bound(speed, 0, 175);
   }
   die(game?: Game | undefined) {
     if (this.dead) return;
@@ -64,25 +57,20 @@ export class Player implements GameElement {
       y: this.y,
       rotation: this.rotation,
       width: this.width,
-      height: this.height
+      height: this.height,
     };
   }
   live(game: Game, delay: number): void {
     if (this.dead) return;
     this.age += delay;
-    // if (this.age >= 5_000) return this.die(game);
+    // if (this.age >= 30_000) return this.die(game);
     const radians = (this.rotation * Math.PI) / 180;
     this.x += (Math.cos(radians) * this.speed * delay) / 1000;
     this.y += (Math.sin(radians) * this.speed * delay) / 1000;
     this.canAccelerate = true;
     this.canRotate = true;
     this.canShoot = true;
-    if (
-      this.x < -this.width ||
-      this.x > game.width ||
-      this.y < -this.height ||
-      this.y > game.height
-    ) {
+    if (this.x < -this.width || this.x > game.width || this.y < -this.height || this.y > game.height) {
       return this.die(game);
     }
     this.speed -= 3;
@@ -115,19 +103,12 @@ export class Player implements GameElement {
   }
   shoot(game?: Game): void {
     if (this.dead || !this.canShoot) return;
-    if (Date.now() - this.lastShoot < this.fireRate) return;
+    if (this.age - this.lastShoot < this.fireRate) return;
     this.canShoot = false;
     (game ?? this.game).insert(
-      new Laser(
-        this.x + this.width / 2,
-        this.y + this.height / 2,
-        5,
-        5,
-        this.rotation,
-        this.id
-      )
+      new Laser(this.x + this.width / 2, this.y + this.height / 2, 5, 5, this.rotation, this.id)
     );
-    this.lastShoot = Date.now();
+    this.lastShoot = this.age;
   }
   rotate(direction: boolean): void {
     if (this.dead || !this.canRotate) return;

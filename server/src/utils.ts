@@ -17,23 +17,13 @@ export const boundedRandom = (min: number, max: number): number => {
 };
 
 export const randomInNormalDistribution = (std: number = 0.2): number => {
-  return (
-    0.5 +
-    std * Math.sqrt(-2 * Math.log(rand())) * Math.cos(2 * Math.PI * rand())
-  );
+  return 0.5 + std * Math.sqrt(-2 * Math.log(rand())) * Math.cos(2 * Math.PI * rand());
 };
 
 export const bound = (value: number, min: number, max: number): number => {
   return Math.min(Math.max(value, min), max);
 };
-export const circleCollision = (
-  x1: number,
-  y1: number,
-  r1: number,
-  x2: number,
-  y2: number,
-  r2: number
-): boolean => {
+export const circleCollision = (x1: number, y1: number, r1: number, x2: number, y2: number, r2: number): boolean => {
   const dx = x1 - x2;
   const dy = y1 - y2;
   const distance = Math.sqrt(dx * dx + dy * dy);
@@ -44,14 +34,8 @@ export const zeros2d = (width: number, height: number): number[] => {
   return Array.from({ length: width * height }, () => 0);
 };
 
-export const zeros = (
-  width: number,
-  height: number,
-  shape: number
-): number[][] => {
-  return Array.from({ length: width * height }, () =>
-    Array.from({ length: shape }, () => 0)
-  );
+export const zeros = (width: number, height: number, shape: number): number[][] => {
+  return Array.from({ length: width * height }, () => Array.from({ length: shape }, () => 0));
 };
 
 export const finiteQueue = <T>(size: number): T[] => {
@@ -67,9 +51,8 @@ export class PngSaver {
   static async save(buf: NdArray, filename: string) {
     const paths = filename.split("/");
     paths.pop();
-    if (paths.length)
-      await mkdir(paths.join("/"), { recursive: true }).catch(() => {});
-    const stream = createWriteStream(filename);
+    if (paths.length) await mkdir(paths.join("/"), { recursive: true }).catch(() => {});
+    const stream = createWriteStream(filename + ".png");
     savePixels(buf, "png").pipe(stream);
     await new Promise((resolve, reject) => {
       stream.on("finish", resolve);

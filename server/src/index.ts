@@ -3,11 +3,13 @@ import Express from "express";
 import upgrade from "./websocket";
 import shortid from "shortid";
 import Cors from "cors";
+import OS from "os";
+
+// @ts-ignore
+process.env.UV_THREADPOOL_SIZE = OS.cpus().length;
 
 // remove - char because it's breaking natural dblClick selection
-shortid.characters(
-  "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ_£"
-);
+shortid.characters("0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ_£");
 
 const App = Express();
 
